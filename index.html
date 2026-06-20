@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAPAK - Jo Chahiye, Abhi Chahiye</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#fff7ed', 100: '#ffedd5', 500: '#f97316', 600: '#ea580c', 900: '#7c2d12' }
+                    },
+                    animation: {
+                        'bounce-slight': 'bounceSlight 2s infinite ease-in-out',
+                    },
+                    keyframes: {
+                        bounceSlight: {
+                            '0%, 100%': { transform: 'translateY(-5%)' },
+                            '50%': { transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Animations & Styles -->
+    <style>
+        .animate-in { animation-duration: 400ms; animation-fill-mode: backwards; animation-timing-function: ease-out; }
+        .fade-in { animation-name: fadeIn; }
+        .slide-in-right { animation-name: slideInRight; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans selection:bg-brand-200 selection:text-brand-900 text-gray-800">
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
+        <!-- Top Location Bar (Blinkit style) -->
+        <div class="border-b border-gray-100 bg-gray-50/80 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors" onclick="navigateTo('location')">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shadow-sm">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Delivering to</span>
+                        <span class="text-sm font-black text-gray-900 flex items-center gap-1">
+                            <span class="header-location-text line-clamp-1 max-w-[200px] md:max-w-xs">Select Location</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-brand-500"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer group" onclick="navigateTo('home')">
+                <div class="text-2xl font-black tracking-tighter text-gray-900 flex items-center">
+                    LA<i data-lucide="zap" class="w-6 h-6 text-brand-500 fill-brand-500 mx-0.5"></i>PAK
+                </div>
+            </div>
+
+            <!-- Desktop Search -->
+            <div class="hidden md:flex flex-1 max-w-2xl mx-8 relative">
+                <div class="relative w-full group">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-500 transition-colors"></i>
+                    <input 
+                        type="text" 
+                        id="search-input-header"
+                        autocomplete="off"
+                        spellcheck="false"
+                        data-lpignore="true"
+                        placeholder="Search for 'milk', 'bread', 'eggs'..." 
+                        class="w-full pl-12 pr-4 py-2.5 rounded-xl bg-gray-100 border border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-300 text-gray-700 placeholder-gray-400 outline-none"
+                    />
+                </div>
+            </div>
+
+            <!-- Desktop Nav Actions -->
+            <div class="hidden md:flex items-center gap-6">
+                <button onclick="navigateTo('home')" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Home</button>
+                <button onclick="navigateTo('tracking')" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Orders</button>
+                <div class="w-px h-6 bg-gray-200"></div>
+                
+                <button class="relative p-2 text-gray-600 hover:text-brand-600 transition-colors" onclick="setIsCartOpen(true)">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                    <span class="cart-badge hidden absolute -top-1 -right-1 bg-brand-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">0</span>
+                </button>
+                
+                <button onclick="navigateTo('profile')" class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl transition-colors font-medium">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    <span id="header-user-text">Login</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pb-24" id="main-content">
+        
+        <!-- ================= HOME VIEW ================= -->
+        <div id="view-home" class="animate-in fade-in block">
+            <!-- Hero Section -->
+            <section class="bg-gray-900 text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-transparent z-10"></div>
+                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1920" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="Groceries">
+                
+                <div class="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-20">
+                    <div class="max-w-xl space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/20 border border-brand-500/50 text-brand-400 text-sm font-bold backdrop-blur-sm">
+                            <i data-lucide="zap" class="w-4 h-4 fill-brand-400"></i>
+                            Delivery in 10 minutes
+                        </div>
+                        <h1 class="text-5xl md:text-6xl font-black leading-tight tracking-tighter">
+                            JO CHAHIYE, <br/>
+                            <span class="text-brand-500">ABHI CHAHIYE.</span>
+                        </h1>
+                        <p class="text-gray-300 text-lg md:text-xl">
+                            Fresh groceries, snacks, and daily essentials delivered right to your door at lightning speed.
+                        </p>
+
+                        <!-- Mobile Hero Search -->
+                        <div class="md:hidden relative w-full shadow-2xl rounded-xl cursor-pointer mt-6" onclick="navigateTo('search')">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                            <input 
+                                type="text" 
+                                autocomplete="off"
+                                placeholder="Search products..." 
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-white text-gray-900 outline-none pointer-events-none font-medium"
+                                readonly
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section class="max-w-7xl mx-auto px-4 py-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Shop by Category</h2>
+                </div>
+                <div id="categories-grid" class="grid grid-cols-4 md:grid-cols-8 gap-3 md:gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Deals Section -->
+            <section class="max-w-7xl mx-auto px-4 py-4">
+                <div id="deals-slider" class="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x snap-mandatory scrollbar-hide">
+                    <div class="snap-center shrink-0 w-80 md:w-96 bg-gradient-to-r from-brand-500 to-orange-400 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-brand-500/20 cursor-pointer" onclick="navigateTo('search')">
+                        <div class="relative z-10 w-2/3">
+                            <p class="text-white/90 text-sm font-bold uppercase tracking-wider mb-1">Mega Sale</p>
+                            <h3 class="text-2xl font-black mb-4 leading-tight">Up to 40% OFF on Snacks</h3>
+                            <button class="bg-white text-brand-600 px-4 py-2 rounded-lg text-sm font-bold shadow-sm">Shop Now</button>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1599490659213-e2b9527bd087?auto=format&fit=crop&q=80&w=300" class="absolute -right-10 top-0 h-full object-cover opacity-80 mix-blend-luminosity" alt="Snacks">
+                    </div>
+                    <div class="snap-center shrink-0 w-80 md:w-96 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg cursor-pointer" onclick="navigateTo('search')">
+                        <div class="relative z-10 w-2/3">
+                            <p class="text-gray-300 text-sm font-bold uppercase tracking-wider mb-1">Daily Essentials</p>
+                            <h3 class="text-2xl font-black mb-4 leading-tight">Buy 1 Get 1 on Dairy</h3>
+                            <button class="bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">Shop Now</button>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&q=80&w=300" class="absolute -right-4 top-0 h-full object-cover opacity-60" alt="Dairy">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily Staples -->
+            <section class="max-w-7xl mx-auto px-4 py-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">All Products</h2>
+                    <button class="text-brand-600 text-sm font-bold hover:underline" onclick="navigateTo('search')">View All</button>
+                </div>
+                <div id="staples-products" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Populated by JS from Firestore -->
+                    <div class="col-span-full py-10 text-center text-gray-500">
+                        <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i>
+                        Loading products...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trending Banner -->
+            <section class="max-w-7xl mx-auto px-4 py-6">
+                <div class="bg-brand-50 rounded-2xl border border-brand-100 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-brand-900 mb-2">Restock Your Kitchen</h2>
+                        <p class="text-brand-700 text-sm max-w-md">Get fresh vegetables and fruits delivered straight from the farm to your doorstep in 10 minutes.</p>
+                    </div>
+                    <button onclick="searchCategory('Vegetables')" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-brand-500/30 whitespace-nowrap">
+                        Explore Fresh Produce
+                    </button>
+                </div>
+            </section>
+
+            <!-- Trending Products -->
+            <section class="max-w-7xl mx-auto px-4 py-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Trending Now</h2>
+                </div>
+                <div id="trending-products" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Why Choose Us -->
+            <section class="max-w-7xl mx-auto px-4 py-12 border-t border-gray-200 mt-8 bg-white">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-brand-50 rounded-full flex items-center justify-center mb-4"><i data-lucide="zap" class="w-6 h-6 text-brand-500"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-1">Superfast Delivery</h4>
+                        <p class="text-sm text-gray-500">Delivered under 10 mins</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-brand-50 rounded-full flex items-center justify-center mb-4"><i data-lucide="shield-check" class="w-6 h-6 text-brand-500"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-1">Genuine Products</h4>
+                        <p class="text-sm text-gray-500">100% authentic items</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-brand-50 rounded-full flex items-center justify-center mb-4"><i data-lucide="leaf" class="w-6 h-6 text-brand-500"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-1">Fresh Quality</h4>
+                        <p class="text-sm text-gray-500">Sourced fresh daily</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-brand-50 rounded-full flex items-center justify-center mb-4"><i data-lucide="headphones" class="w-6 h-6 text-brand-500"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-1">24/7 Support</h4>
+                        <p class="text-sm text-gray-500">Always here to help</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= LOCATION SETUP VIEW ================= -->
+        <div id="view-location" class="max-w-md mx-auto px-4 py-12 animate-in fade-in hidden flex-col min-h-[80vh] justify-center relative">
+            <div class="text-center mb-10 mt-8">
+                <div class="w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                    <i data-lucide="map-pin" class="w-12 h-12 text-brand-500 absolute animate-bounce-slight fill-brand-100"></i>
+                    <div class="w-12 h-3 bg-brand-200 rounded-[100%] absolute -bottom-2 opacity-60"></div>
+                </div>
+                <h2 class="text-3xl font-black text-gray-900 mb-3 tracking-tight">Set Delivery Location</h2>
+                <p class="text-gray-500 text-sm px-4">To show you accurate pricing and lightning-fast delivery times, we need your location.</p>
+            </div>
+
+            <!-- Auto Detect Button -->
+            <button onclick="detectLocation()" id="detect-loc-btn" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-brand-500/30 transition-all flex items-center justify-center gap-3 mb-6 transform active:scale-95">
+                <i data-lucide="crosshair" class="w-6 h-6"></i> Detect My Location
+            </button>
+
+            <div class="flex items-center gap-4 mb-6">
+                <div class="h-px bg-gray-200 flex-1"></div>
+                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">OR</span>
+                <div class="h-px bg-gray-200 flex-1"></div>
+            </div>
+
+            <!-- Manual Entry -->
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                <label class="block text-sm font-bold text-gray-700 mb-3">Enter Location Manually</label>
+                <div class="relative w-full group mb-4">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="text" id="manual-loc-input" placeholder="e.g. 123 Main Street, City" class="w-full pl-12 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all font-medium text-gray-900 outline-none">
+                </div>
+                <button onclick="setManualLocation()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl transition-all shadow-md">
+                    Confirm Location
+                </button>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button onclick="navigateTo('home')" class="text-gray-400 text-sm font-bold hover:text-gray-600 transition-colors">Skip for now</button>
+            </div>
+        </div>
+
+        <!-- ================= SEARCH VIEW ================= -->
+        <div id="view-search" class="pb-24 pt-6 px-4 max-w-7xl mx-auto min-h-screen animate-in fade-in hidden">
+            <div class="md:hidden relative w-full mb-6">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                <input 
+                    type="text" 
+                    id="search-input-main"
+                    autocomplete="off"
+                    spellcheck="false"
+                    data-lpignore="true"
+                    placeholder="Search products..." 
+                    class="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all shadow-sm"
+                />
+            </div>
+
+            <h2 id="search-results-title" class="text-xl font-bold text-gray-900 mb-6">Suggested for you</h2>
+            
+            <div id="search-results-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 hidden">
+                <!-- Populated by JS -->
+            </div>
+
+            <div id="search-empty" class="flex flex-col items-center justify-center py-24 text-center hidden">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="search" class="w-10 h-10 text-gray-300"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">No products found</h3>
+                <p class="text-gray-500">Try searching for something else like "milk" or "bread".</p>
+            </div>
+        </div>
+
+        <!-- ================= PRODUCT VIEW ================= -->
+        <div id="view-product" class="pb-24 pt-6 px-4 max-w-5xl mx-auto min-h-screen animate-in fade-in hidden">
+            <button onclick="navigateBack()" class="mb-6 flex items-center gap-2 text-gray-600 hover:text-brand-600 font-bold transition-colors w-fit p-2 pr-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Back
+            </button>
+            <div id="product-details-container" class="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row overflow-hidden relative">
+               <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- ================= LOGIN VIEW ================= -->
+        <div id="view-login" class="max-w-md mx-auto px-4 py-12 animate-in fade-in hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 relative overflow-hidden">
+                <div class="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mb-6">
+                    <i data-lucide="shield-check" class="w-7 h-7 text-brand-500"></i>
+                </div>
+                <h2 class="text-2xl font-black text-gray-900 mb-2">Welcome to Lapak</h2>
+                <p class="text-gray-500 text-sm mb-6">Log in or sign up to access your orders and profile.</p>
+                
+                <!-- Phone Auth Section -->
+                <div class="space-y-4 mb-6">
+                    <div id="phone-input-group" class="space-y-3">
+                        <label class="block text-sm font-bold text-gray-700">Phone Number</label>
+                        <div class="flex gap-2">
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-600 font-bold flex items-center">
+                                +91
+                            </div>
+                            <input type="tel" id="phone-input" placeholder="10-digit mobile number" class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all font-medium" maxlength="10">
+                        </div>
+                        <button id="send-otp-btn" onclick="handlePhoneLogin()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg shadow-gray-900/20 transition-all flex items-center justify-center gap-2">
+                            Send OTP <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="otp-input-group" class="space-y-3 hidden">
+                        <label class="block text-sm font-bold text-gray-700">Enter OTP</label>
+                        <input type="number" id="otp-input" placeholder="6-digit code" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all font-bold tracking-widest text-center text-lg">
+                        <button id="verify-otp-btn" onclick="verifyOTP()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-500/30 transition-all flex items-center justify-center gap-2">
+                            Verify & Login <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="recaptcha-container"></div>
+                </div>
+
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-px bg-gray-200 flex-1"></div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">OR</span>
+                    <div class="h-px bg-gray-200 flex-1"></div>
+                </div>
+
+                <!-- Google Auth -->
+                <button onclick="handleGoogleLogin()" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-3 mb-4 shadow-sm">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <button onclick="showOwnerLogin()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg">
+                    Store Owner Login
+                </button>
+
+                <!-- Email Auth Toggle -->
+                <div id="email-auth-section" class="hidden space-y-3 mb-4 mt-4">
+                    <input type="email" id="email-input" placeholder="Email Address" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all font-medium">
+                    <input type="password" id="password-input" placeholder="Password" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all font-medium">
+                    <button id="email-login-btn" onclick="handleEmailLogin()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg shadow-gray-900/20 transition-all flex items-center justify-center gap-2">
+                        Login / Sign Up <i data-lucide="mail" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <button onclick="document.getElementById('email-auth-section').classList.toggle('hidden')" class="w-full mt-4 text-center text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors">
+                    Continue with Email Instead
+                </button>
+
+                <p class="text-[10px] text-gray-400 mt-6 text-center leading-relaxed">By continuing, you agree to Lapak's Terms of Service & Privacy Policy.</p>
+            </div>
+        </div>
+
+        <!-- ================= CHECKOUT VIEW ================= -->
+        <div id="view-checkout" class="max-w-3xl mx-auto px-4 py-8 pb-32 animate-in slide-in-right hidden">
+            <h2 class="text-2xl font-black text-gray-900 mb-6">Checkout</h2>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-brand-50 p-2 rounded-full text-brand-600">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Delivery Address</h3>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-bold text-gray-900">Selected Location</span>
+                        <button onclick="navigateTo('location')" class="text-brand-600 text-sm font-bold">Change</button>
+                    </div>
+                    <p id="checkout-address-text" class="text-gray-600 text-sm leading-relaxed font-medium">
+                        Fetching location...
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-gray-900"></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-gray-100 p-2 rounded-full text-gray-900">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Payment Method</h3>
+                </div>
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="payment" checked class="w-4 h-4 text-brand-500 focus:ring-brand-500 border-gray-300" />
+                            <span class="font-bold text-gray-700">UPI / Google Pay</span>
+                        </div>
+                        <span class="text-xs bg-brand-50 text-brand-700 px-2 py-1 rounded border border-brand-200 font-bold">Recommended</span>
+                    </label>
+                    <label class="flex items-center justify-between p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="payment" class="w-4 h-4 text-brand-500 focus:ring-brand-500 border-gray-300" />
+                            <span class="font-bold text-gray-700">Cash on Delivery</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="fixed md:sticky bottom-0 md:bottom-auto left-0 w-full bg-white md:bg-transparent p-4 md:p-0 border-t border-gray-200 md:border-none z-30">
+                <button onclick="placeOrder()" id="checkout-pay-btn" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-brand-500/30 transition-all flex items-center justify-center gap-2">
+                    Pay & Place Order <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= TRACKING VIEW ================= -->
+        <div id="view-tracking" class="max-w-xl mx-auto px-4 py-12 animate-in fade-in hidden">
+            <h2 class="text-2xl font-black text-gray-900 mb-6">Your Orders</h2>
+            
+            <div id="no-orders" class="text-center py-12 hidden">
+                <i data-lucide="package-x" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                <h3 class="text-lg font-bold text-gray-900">No active orders</h3>
+                <p class="text-gray-500 text-sm">Looks like you haven't placed an order yet.</p>
+                <button onclick="navigateTo('home')" class="mt-4 text-brand-600 font-bold hover:underline">Start Shopping</button>
+            </div>
+
+            <div id="active-order" class="hidden">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-1">Order Placed!</h3>
+                    <p class="text-gray-500 text-sm">Arriving in <span class="font-bold text-brand-600">10 mins</span></p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+                    <div class="absolute left-10 top-10 bottom-10 w-0.5 bg-gray-100"></div>
+                    <div class="space-y-8 relative z-10">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-md">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">Order Received</p>
+                                <p class="text-xs text-gray-500">Just now</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center border-2 border-white shadow-sm relative">
+                                <span class="absolute w-full h-full rounded-full border-2 border-brand-400 border-t-transparent animate-spin"></span>
+                                <i data-lucide="box" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">Packing your items</p>
+                                <p class="text-xs text-brand-600 font-bold">In Progress...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 opacity-40">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center border-2 border-white">
+                                <i data-lucide="bike" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">Out for Delivery</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PROFILE VIEW ================= -->
+        <div id="view-profile" class="max-w-xl mx-auto px-4 py-8 animate-in fade-in hidden">
+            <h2 class="text-2xl font-black text-gray-900 mb-6">My Profile</h2>
+            
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4 mb-6">
+                <div id="profile-user-avatar" class="w-16 h-16 bg-brand-500 rounded-full flex items-center justify-center text-white text-2xl font-black shadow-sm">
+                    U
+                </div>
+                <div>
+                    <h3 id="profile-user-name" class="font-bold text-lg text-gray-900">Lapak User</h3>
+                    <p id="profile-user-id" class="text-sm text-gray-500">Not verified</p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="navigateTo('location')" class="w-full bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-gray-200 transition">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-gray-400"></i>
+                        <span class="font-medium text-gray-700">Set Location Address</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+                </button>
+                <button class="w-full bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-gray-200 transition">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="credit-card" class="w-5 h-5 text-gray-400"></i>
+                        <span class="font-medium text-gray-700">Payment Methods</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+                </button>
+                <button class="w-full bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-gray-200 transition">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="headphones" class="w-5 h-5 text-gray-400"></i>
+                        <span class="font-medium text-gray-700">Help & Support</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+                </button>
+            </div>
+
+            <button onclick="handleLogout()" class="w-full mt-8 text-red-500 font-bold p-4 bg-red-50 rounded-xl hover:bg-red-100 transition">
+                Log Out
+            </button>
+        </div>
+
+        <!-- Global Footer -->
+        <footer id="main-footer" class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="text-2xl font-black text-white flex items-center mb-4">
+                        LA<i data-lucide="zap" class="w-6 h-6 text-brand-500 fill-brand-500 mx-0.5"></i>PAK
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Jo Chahiye, Abhi Chahiye. India's fastest delivery service for all your daily needs.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><button onclick="navigateTo('home')" class="hover:text-brand-500 transition-colors">Home</button></li>
+                        <li><button onclick="navigateTo('search')" class="hover:text-brand-500 transition-colors">Categories</button></li>
+                        <li><button onclick="navigateTo('search')" class="hover:text-brand-500 transition-colors">Deals</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Customer Service</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-brand-500 transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-brand-500 transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-brand-500 transition-colors">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Download App</h4>
+                    <div class="flex flex-col gap-2">
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-700 transition">
+                            <i data-lucide="smartphone" class="w-5 h-5"></i> App Store
+                        </button>
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-700 transition">
+                            <i data-lucide="play-square" class="w-5 h-5"></i> Play Store
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe z-40 px-6 py-2 flex justify-between items-center shadow-[0_-10px_20px_rgba(0,0,0,0.03)] rounded-t-2xl">
+        <button id="nav-home" onclick="navigateTo('home')" class="bottom-nav-item flex flex-col items-center gap-1 transition-colors duration-300 text-brand-500 pt-2 pb-1">
+            <i data-lucide="home" class="w-6 h-6" style="stroke-width: 2.5;"></i>
+            <span class="text-[10px] font-bold">Home</span>
+        </button>
+        <button id="nav-search" onclick="navigateTo('search')" class="bottom-nav-item flex flex-col items-center gap-1 transition-colors duration-300 text-gray-400 pt-2 pb-1">
+            <i data-lucide="search" class="w-6 h-6" style="stroke-width: 2;"></i>
+            <span class="text-[10px] font-medium">Search</span>
+        </button>
+        <div class="relative -top-5">
+            <button onclick="setIsCartOpen(true)" class="bg-gray-900 text-white p-3.5 rounded-2xl shadow-lg shadow-gray-900/30 transform transition-transform active:scale-95 border-2 border-white">
+                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                <span class="cart-badge hidden absolute -top-2 -right-2 bg-brand-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-sm">0</span>
+            </button>
+        </div>
+        <button id="nav-tracking" onclick="navigateTo('tracking')" class="bottom-nav-item flex flex-col items-center gap-1 transition-colors duration-300 text-gray-400 pt-2 pb-1">
+            <i data-lucide="receipt" class="w-6 h-6" style="stroke-width: 2;"></i>
+            <span class="text-[10px] font-medium">Orders</span>
+        </button>
+        <button id="nav-profile" onclick="navigateTo('profile')" class="bottom-nav-item flex flex-col items-center gap-1 transition-colors duration-300 text-gray-400 pt-2 pb-1">
+            <i data-lucide="user" class="w-6 h-6" style="stroke-width: 2;"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </button>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div id="cart-backdrop" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 transition-opacity animate-in fade-in hidden" onclick="setIsCartOpen(false)"></div>
+    
+    <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full md:w-[400px] bg-gray-50 z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col translate-x-full">
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between p-4 bg-white border-b border-gray-100 shrink-0">
+            <div class="flex items-center gap-2">
+                <h2 class="text-lg font-black text-gray-900">Your Cart</h2>
+                <span id="cart-header-count" class="bg-brand-100 text-brand-700 px-2 py-0.5 rounded text-xs font-bold ml-2">0 Items</span>
+            </div>
+            <button onclick="setIsCartOpen(false)" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- Empty State -->
+            <div id="empty-cart" class="h-full flex flex-col items-center justify-center text-center space-y-4">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
+                    <i data-lucide="shopping-bag" class="w-10 h-10 text-gray-300"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Cart is empty</h3>
+                <p class="text-gray-500 text-sm">Add items to start a new order.</p>
+                <button onclick="setIsCartOpen(false); navigateTo('home');" class="mt-4 bg-brand-50 text-brand-600 border border-brand-200 px-6 py-2.5 rounded-xl font-bold hover:bg-brand-100 transition-colors">
+                    Start Shopping
+                </button>
+            </div>
+            <!-- Cart Items Container -->
+            <div id="cart-items-container" class="space-y-3"></div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div id="cart-footer" class="border-t border-gray-200 p-4 bg-white shrink-0 hidden rounded-t-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+            <div class="bg-gray-50 p-3 rounded-xl mb-4 border border-gray-100">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Item Total</span>
+                    <span id="cart-subtotal" class="font-medium">₹0</span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Delivery Fee</span>
+                    <span class="text-brand-600 font-bold">FREE</span>
+                </div>
+                <div class="flex justify-between font-black text-lg text-gray-900 pt-2 border-t border-gray-200 mt-2">
+                    <span>Grand Total</span>
+                    <span id="cart-total">₹0</span>
+                </div>
+            </div>
+            <button onclick="handleCheckoutClick()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-500/30 transition-transform transform active:scale-[0.98] flex justify-between items-center px-6">
+                <span>Proceed to Pay</span>
+                <span id="checkout-btn-text" class="flex items-center gap-1">₹0 <i data-lucide="chevron-right" class="w-4 h-4"></i></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- FIREBASE INTEGRATION & MAIN LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, onAuthStateChanged, signOut, 
+            RecaptchaVerifier, signInWithPhoneNumber, 
+            GoogleAuthProvider, signInWithPopup, 
+            signInWithEmailAndPassword, createUserWithEmailAndPassword 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // Import Firestore functions
+        import { 
+            getFirestore, doc, setDoc, getDoc, collection, onSnapshot
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // User's Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCD3TrFzwAhDIgO0tzFWoCiL31E2HRZf4g",
+            authDomain: "lapak-80a76.firebaseapp.com",
+            projectId: "lapak-80a76",
+            storageBucket: "lapak-80a76.firebasestorage.app",
+            messagingSenderId: "289969230090",
+            appId: "1:289969230090:web:6e8111adbb36796f726af3",
+            measurementId: "G-7PN1EF5LX9"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lapak-default-app';
+
+        // --- ROLE ASSIGNMENTS ---
+        const FOUNDER_EMAILS = [
+            "founder@lapak.com"
+        ];
+        
+        const ADMIN_EMAILS = [
+            "owner@lapak.com",
+            "admin@lapak.com"
+        ];
+
+        const DELIVERY_EMAILS = [
+            "delivery@lapak.com",
+            "rider@lapak.com"
+        ];
+
+        // --- DATA ---
+        const CATEGORIES = [
+            { id: 'c1', name: 'Vegetables', image: 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=150&q=80', color: 'bg-green-50' },
+            { id: 'c2', name: 'Fruits', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=150&q=80', color: 'bg-red-50' },
+            { id: 'c3', name: 'Dairy', image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=150&q=80', color: 'bg-blue-50' },
+            { id: 'c4', name: 'Snacks', image: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=150&q=80', color: 'bg-orange-50' },
+            { id: 'c5', name: 'Beverages', image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=150&q=80', color: 'bg-purple-50' },
+            { id: 'c6', name: 'Household', image: 'https://images.unsplash.com/photo-1585909695284-32d2985ac9c0?w=150&q=80', color: 'bg-teal-50' },
+            { id: 'c7', name: 'Bakery', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&q=80', color: 'bg-amber-50' },
+            { id: 'c8', name: 'Meat', image: 'https://images.unsplash.com/photo-1607623814075-e51df1bd682f?w=150&q=80', color: 'bg-rose-50' },
+        ];
+
+        let PRODUCTS = [];
+
+        // --- GLOBAL STATE ---
+        window.appState = {
+            currentView: 'home',
+            lastMainView: 'home',
+            selectedProductId: null,
+            cart: [],
+            isCartOpen: false,
+            searchQuery: '',
+            currentUser: null,
+            pendingRoute: null,
+            hasActiveOrder: false,
+            location: null, 
+            confirmationResult: null 
+        };
+
+        // --- BROWSER HISTORY (BACK/FORWARD) HANDLER ---
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.view) {
+                if (e.state.view === 'product') {
+                    window.appState.selectedProductId = e.state.id;
+                }
+                window.navigateInternal(e.state.view);
+            } else {
+                window.navigateInternal('home');
+            }
+        });
+
+        // --- FIRESTORE PRODUCTS LISTENER ---
+        const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+        onSnapshot(productsRef, (snapshot) => {
+            PRODUCTS = [];
+            snapshot.forEach((doc) => {
+                PRODUCTS.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // If the user lands directly on a product page via URL, render it once products are loaded
+            if (window.appState.pendingRoute === 'product' && window.appState.selectedProductId) {
+                window.navigateInternal('product');
+                window.appState.pendingRoute = null; // Clear pending route
+            }
+            
+            updateUI();
+        });
+
+        // UI Toast for Visual Feedback
+        window.showErrorToast = (msg) => {
+            let toast = document.getElementById('error-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'error-toast';
+                toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl z-[100] transition-opacity duration-300 font-bold text-sm flex items-center gap-2';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${msg}`;
+            toast.style.opacity = '1';
+            toast.style.pointerEvents = 'auto';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.pointerEvents = 'none';
+            }, 6000);
+        };
+
+        window.saveUserProfile = async (user) => {
+            if (!user) return;
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+                const userSnap = await getDoc(userRef);
+                if (!userSnap.exists()) {
+                    let role = 'customer'; 
+                    if (user.email) {
+                        if (FOUNDER_EMAILS.includes(user.email)) role = 'founder';
+                        else if (ADMIN_EMAILS.includes(user.email)) role = 'store_owner';
+                        else if (DELIVERY_EMAILS.includes(user.email)) role = 'delivery_partner';
+                    }
+                    await setDoc(userRef, {
+                        uid: user.uid,
+                        email: user.email || null,
+                        phoneNumber: user.phoneNumber || null,
+                        displayName: user.displayName || (user.email ? user.email.split('@')[0] : "Lapak User"),
+                        role: role,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } catch (error) {
+                console.error("Error saving profile", error);
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            window.appState.currentUser = user;
+
+            if (user) {
+                await window.saveUserProfile(user);
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        if (userData.role === 'store_owner' || userData.role === 'founder' || userData.role === 'admin') {
+                            window.location.href = "admin.html";
+                            return; 
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching role:", error);
+                }
+
+                if (!window.appState.location) {
+                    window.navigateTo('location');
+                } else if (window.appState.pendingRoute) {
+                    const route = window.appState.pendingRoute;
+                    window.appState.pendingRoute = null;
+                    window.navigateTo(route);
+                }
+            }
+
+            document.getElementById('header-user-text').textContent = user ? 'Profile' : 'Login';
+            
+            if (user) {
+                const identifier = user.phoneNumber || user.email || "Anonymous User";
+                const displayName = user.displayName || (user.email ? user.email.split('@')[0] : "Lapak User");
+                const avatarEl = document.getElementById('profile-user-avatar');
+                const nameEl = document.getElementById('profile-user-name');
+                const idEl = document.getElementById('profile-user-id');
+                
+                if(avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase();
+                if(nameEl) nameEl.textContent = displayName;
+                if(idEl) idEl.textContent = identifier;
+            }
+        });
+
+        // --- LOCATION LOGIC ---
+        window.detectLocation = () => {
+            const btn = document.getElementById('detect-loc-btn');
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> Detecting...`;
+            lucide.createIcons();
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        try {
+                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                            const data = await response.json();
+                            let placeName = `Location (${lat.toFixed(2)}, ${lng.toFixed(2)})`;
+                            
+                            if (data && data.address) {
+                                const addr = data.address;
+                                const local = addr.neighbourhood || addr.suburb || addr.city_district || addr.residential || addr.road || '';
+                                const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || '';
+                                if (local && city && local !== city) placeName = `${local}, ${city}`;
+                                else if (local || city) placeName = local || city;
+                                else if (data.display_name) placeName = data.display_name.split(',').slice(0, 2).join(',');
+                            }
+                            completeLocationSetup(placeName);
+                        } catch (error) {
+                            completeLocationSetup(`Location (${lat.toFixed(2)}, ${lng.toFixed(2)})`);
+                        } finally {
+                            btn.innerHTML = origHTML;
+                            lucide.createIcons();
+                        }
+                    },
+                    (error) => {
+                        alert("Could not automatically detect location. Please ensure permissions are granted or enter manually.");
+                        btn.innerHTML = origHTML;
+                        lucide.createIcons();
+                    },
+                    { timeout: 10000 }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        };
+
+        window.setManualLocation = () => {
+            const inputVal = document.getElementById('manual-loc-input').value.trim();
+            if(!inputVal) return alert("Please enter a valid location address or landmark.");
+            completeLocationSetup(inputVal);
+        };
+
+        function completeLocationSetup(addressString) {
+            window.appState.location = addressString;
+            const locElements = document.querySelectorAll('.header-location-text');
+            locElements.forEach(el => {
+                el.textContent = addressString;
+                el.classList.add('text-brand-600'); 
+            });
+
+            const checkoutAddrEl = document.getElementById('checkout-address-text');
+            if (checkoutAddrEl) checkoutAddrEl.textContent = addressString;
+
+            if (window.appState.pendingRoute) {
+                const route = window.appState.pendingRoute;
+                window.appState.pendingRoute = null;
+                window.navigateTo(route);
+            } else {
+                window.navigateTo('home');
+            }
+        }
+
+        // --- AUTHENTICATION HANDLERS ---
+        window.initRecaptcha = () => {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible'
+                });
+            }
+        };
+
+        window.handlePhoneLogin = async () => {
+            const phoneInput = document.getElementById('phone-input').value;
+            if (!phoneInput || phoneInput.length < 10) return alert('Please enter a valid 10-digit phone number.');
+            const phoneNumber = "+91" + phoneInput;
+            const btn = document.getElementById('send-otp-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Sending...`;
+            lucide.createIcons();
+
+            try {
+                window.initRecaptcha();
+                const appVerifier = window.recaptchaVerifier;
+                window.appState.confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                document.getElementById('phone-input-group').classList.add('hidden');
+                document.getElementById('otp-input-group').classList.remove('hidden');
+            } catch (error) {
+                alert("Could not send OTP.");
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        };
+
+        window.verifyOTP = async () => {
+            const otp = document.getElementById('otp-input').value;
+            if(!otp || otp.length < 6) return alert("Enter a valid 6-digit OTP.");
+            const btn = document.getElementById('verify-otp-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Verifying...`;
+            lucide.createIcons();
+
+            try {
+                const cred = await window.appState.confirmationResult.confirm(otp);
+                await window.saveUserProfile(cred.user);
+            } catch (error) {
+                alert("Invalid OTP code. Try again.");
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        };
+
+        window.handleGoogleLogin = async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const cred = await signInWithPopup(auth, provider);
+                await window.saveUserProfile(cred.user);
+            } catch (error) {
+                alert("Google Sign-In failed: " + error.message);
+            }
+        };
+
+        window.handleEmailLogin = async () => {
+            const email = document.getElementById('email-input').value;
+            const pass = document.getElementById('password-input').value;
+            if(!email || !pass) return alert("Please enter both email and password.");
+            const btn = document.getElementById('email-login-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Please wait...`;
+            lucide.createIcons();
+
+            try {
+                const cred = await signInWithEmailAndPassword(auth, email, pass);
+                await window.saveUserProfile(cred.user);
+            } catch (error) {
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    try {
+                        const newCred = await createUserWithEmailAndPassword(auth, email, pass);
+                        await window.saveUserProfile(newCred.user);
+                    } catch (signupError) {
+                        alert("Sign Up Error: " + signupError.message);
+                        btn.innerHTML = originalText;
+                        lucide.createIcons();
+                    }
+                } else {
+                    alert("Login Error: " + error.message);
+                    btn.innerHTML = originalText;
+                    lucide.createIcons();
+                }
+            }
+        };
+
+        window.handleLogout = async () => {
+            try {
+                document.getElementById('phone-input-group').classList.remove('hidden');
+                document.getElementById('otp-input-group').classList.add('hidden');
+                document.getElementById('phone-input').value = '';
+                document.getElementById('otp-input').value = '';
+                await signOut(auth);
+                window.navigateTo('home');
+            } catch (error) {
+                console.error("Logout error", error);
+            }
+        };
+
+        window.handleCheckoutClick = () => {
+            setIsCartOpen(false);
+            window.navigateTo('checkout');
+        };
+
+        window.showOwnerLogin = () => {
+            document.getElementById("email-auth-section").classList.remove("hidden");
+            document.getElementById("email-input").focus();
+        };
+
+        window.onload = () => {
+            renderCategories();
+            updateUI();
+            
+            document.getElementById('search-input-header').addEventListener('input', handleSearch);
+            document.getElementById('search-input-main').addEventListener('input', handleSearch);
+            
+            lucide.createIcons();
+
+            // Check URL parameters to route correctly on load
+            const path = window.location.pathname;
+            const params = new URLSearchParams(window.location.search);
+
+            if (path.includes('product.html') || params.has('id')) {
+                const id = params.get('id');
+                if (id) {
+                    window.appState.selectedProductId = id;
+                    window.appState.pendingRoute = 'product'; // Wait for Firestore data
+                }
+            } else if (params.has('view')) {
+                const view = params.get('view');
+                window.navigateInternal(view);
+            }
+
+            // Replace the initial history state
+            window.history.replaceState({
+                view: window.appState.pendingRoute || 'home',
+                id: window.appState.selectedProductId
+            }, '', window.location.href);
+        };
+
+        // --- INTERNAL ROUTER (Does DOM Swapping) ---
+        window.navigateInternal = (view) => {
+            if(view === 'home' || view === 'search') {
+                window.appState.lastMainView = view;
+            }
+
+            window.appState.currentView = view;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            ['home', 'search', 'checkout', 'tracking', 'profile', 'login', 'location', 'product'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if(el) { 
+                    el.classList.add('hidden'); 
+                    el.classList.remove('block', 'flex', 'animate-in', 'fade-in', 'slide-in-right'); 
+                }
+            });
+            
+            const activeEl = document.getElementById(`view-${view}`);
+            if(activeEl) { 
+                void activeEl.offsetWidth; // Force reflow
+                
+                activeEl.classList.add('animate-in');
+                if (view === 'checkout') {
+                    activeEl.classList.add('slide-in-right');
+                } else {
+                    activeEl.classList.add('fade-in');
+                }
+
+                if(view === 'location') {
+                    activeEl.classList.add('flex');
+                } else {
+                    activeEl.classList.add('block'); 
+                }
+            }
+
+            const footer = document.getElementById('main-footer');
+            if(footer) {
+                if(['home', 'search', 'product'].includes(view)) {
+                    footer.classList.remove('hidden');
+                } else {
+                    footer.classList.add('hidden');
+                }
+            }
+            
+            document.querySelectorAll('.bottom-nav-item').forEach(el => {
+                el.classList.remove('text-brand-500');
+                el.classList.add('text-gray-400');
+                if(el.querySelector('i')) el.querySelector('i').style.strokeWidth = "2";
+                if(el.querySelector('span')) el.querySelector('span').classList.remove('font-bold');
+            });
+            
+            let navIdToHighlight = view;
+            if(view === 'login' && window.appState.pendingRoute) navIdToHighlight = window.appState.pendingRoute;
+
+            const activeNav = document.getElementById(`nav-${navIdToHighlight}`);
+            if(activeNav) {
+                activeNav.classList.remove('text-gray-400');
+                activeNav.classList.add('text-brand-500');
+                activeNav.querySelector('i').style.strokeWidth = "2.5";
+                activeNav.querySelector('span').classList.add('font-bold');
+            }
+
+            if(view === 'search') {
+                document.getElementById('search-input-main').focus();
+                renderSearchResults();
+            }
+            if(view === 'product') {
+                renderProductPage();
+            }
+            
+            if(view === 'tracking') {
+                if(window.appState.hasActiveOrder) {
+                    document.getElementById('no-orders').classList.add('hidden');
+                    document.getElementById('active-order').classList.remove('hidden');
+                } else {
+                    document.getElementById('no-orders').classList.remove('hidden');
+                    document.getElementById('active-order').classList.add('hidden');
+                }
+            }
+        };
+
+        // --- PUBLIC ROUTER (Updates URL + Navigates) ---
+        window.navigateTo = (view) => {
+            const protectedViews = ['profile', 'tracking', 'checkout'];
+            let finalView = view;
+            
+            if (protectedViews.includes(view) && !window.appState.currentUser) {
+                window.appState.pendingRoute = view;
+                finalView = 'login';
+            } else if (view === 'checkout' && !window.appState.location) {
+                window.appState.pendingRoute = 'checkout';
+                finalView = 'location';
+            }
+
+            // Change the URL via History API
+            if (finalView === 'product' && window.appState.selectedProductId) {
+                window.history.pushState({ view: 'product', id: window.appState.selectedProductId }, '', `product.html?id=${window.appState.selectedProductId}`);
+            } else if (finalView === 'home') {
+                window.history.pushState({ view: 'home' }, '', `index.html`);
+            } else {
+                window.history.pushState({ view: finalView }, '', `?view=${finalView}`);
+            }
+
+            window.navigateInternal(finalView);
+        };
+
+        window.setIsCartOpen = (isOpen) => {
+            window.appState.isCartOpen = isOpen;
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-backdrop');
+            
+            if (isOpen) {
+                backdrop.classList.remove('hidden');
+                setTimeout(() => drawer.classList.remove('translate-x-full'), 10);
+            } else {
+                drawer.classList.add('translate-x-full');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            }
+        };
+
+        // --- RENDER FUNCTIONS ---
+        function renderCategories() {
+            document.getElementById('categories-grid').innerHTML = CATEGORIES.map(cat => `
+                <div class="flex flex-col items-center gap-2 group cursor-pointer" onclick="searchCategory('${cat.name}')">
+                    <div class="w-full aspect-square ${cat.color} rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100 group-hover:border-brand-300 transition-colors">
+                        <img src="${cat.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${cat.name}">
+                    </div>
+                    <span class="text-[11px] md:text-xs font-bold text-gray-700 text-center">${cat.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function createProductCardHTML(product) {
+            const cartItem = window.appState.cart.find(item => item.id === product.id);
+            const qty = cartItem ? cartItem.qty : 0;
+
+            let actionHtml = qty > 0 ? `
+                <div class="flex items-center bg-brand-50 rounded-lg border border-brand-200 h-8 w-full mt-2" onclick="event.stopPropagation()">
+                    <button onclick="updateQuantity('${product.id}', -1)" class="w-8 h-full flex items-center justify-center text-brand-600 hover:bg-brand-100 rounded-l-lg transition-colors"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
+                    <span class="flex-1 text-center text-sm font-bold text-brand-700">${qty}</span>
+                    <button onclick="updateQuantity('${product.id}', 1)" class="w-8 h-full flex items-center justify-center text-brand-600 hover:bg-brand-100 rounded-r-lg transition-colors"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+                </div>
+            ` : `
+                <button onclick="event.stopPropagation(); addToCart('${product.id}')" class="w-full h-8 mt-2 rounded-lg border border-gray-200 text-brand-600 font-bold text-sm hover:border-brand-500 hover:bg-brand-50 transition-colors">
+                    ADD
+                </button>
+            `;
+
+            return `
+                <div onclick="openProduct('${product.id}')" class="cursor-pointer bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md hover:border-brand-200 transition-all duration-200 flex flex-col relative">
+                    <div class="w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-50 mb-3 relative">
+                        <img src="${product.image}" class="w-full h-full object-cover mix-blend-multiply" alt="${product.name}">
+                        <div class="absolute bottom-1 right-1 bg-white/90 backdrop-blur text-[9px] font-bold px-1.5 py-0.5 rounded text-gray-600 shadow-sm border border-gray-100">
+                            10 MINS
+                        </div>
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <h3 class="text-gray-900 font-bold text-sm line-clamp-2 mb-1 leading-snug">${product.name}</h3>
+                        <p class="text-gray-500 text-xs mb-2">${product.unit}</p>
+                        <div class="mt-auto flex justify-between items-end">
+                            <div class="font-black text-gray-900">₹${product.price}</div>
+                            <div class="w-20">
+                                ${actionHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.openProduct = (id) => {
+            window.appState.selectedProductId = id;
+            window.navigateTo('product');
+        };
+
+        window.navigateBack = () => {
+            if (window.history.length > 1 && window.history.state && window.history.state.view !== 'home') {
+                window.history.back();
+            } else {
+                window.navigateTo(window.appState.lastMainView || 'home');
+            }
+        };
+
+        function renderProductPage() {
+            const product = PRODUCTS.find(p => p.id === window.appState.selectedProductId);
+            if(!product) return;
+
+            const cartItem = window.appState.cart.find(item => item.id === product.id);
+            const qty = cartItem ? cartItem.qty : 0;
+
+            const mrp = Math.floor(product.price * 1.35); 
+            const discountPercent = Math.round(((mrp - product.price) / mrp) * 100);
+
+            let actionHtml = '';
+            if (qty > 0) {
+                actionHtml = `
+                    <div class="flex items-center justify-between w-full h-[48px] bg-white border border-gray-300 rounded-sm">
+                        <button onclick="updateQuantity('${product.id}', -1)" class="w-1/3 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600"><i data-lucide="minus" class="w-5 h-5"></i></button>
+                        <span class="w-1/3 text-center font-bold text-gray-900">${qty}</span>
+                        <button onclick="updateQuantity('${product.id}', 1)" class="w-1/3 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                    </div>
+                `;
+            } else {
+                actionHtml = `
+                    <button onclick="addToCart('${product.id}')" class="w-full h-[48px] bg-white border border-gray-300 text-gray-900 font-medium rounded-sm flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                        Add to cart
+                    </button>
+                `;
+            }
+
+            const container = document.getElementById('product-details-container');
+            container.className = 'w-full bg-white md:p-4 rounded-xl';
+            
+            container.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Left: Images -->
+                    <div class="w-full md:w-5/12 flex flex-col relative pb-20 md:pb-0">
+                        <div class="text-[11px] md:text-xs text-gray-500 mb-4 px-2 md:px-0">
+                            Home / ${product.category} / <span class="text-gray-800">${product.name}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 relative">
+                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-3">
+                                <button class="bg-white p-2.5 rounded-full shadow-md border border-gray-100 text-gray-400 hover:text-red-500 transition-colors"><i data-lucide="heart" class="w-5 h-5"></i></button>
+                                <button class="bg-white p-2.5 rounded-full shadow-md border border-gray-100 text-gray-400 hover:text-blue-500 transition-colors"><i data-lucide="share-2" class="w-5 h-5"></i></button>
+                            </div>
+                            <div class="aspect-[4/5] bg-gray-50 flex items-center justify-center"><img src="${product.image}" class="w-full h-full object-contain mix-blend-multiply p-4" alt="${product.name}"></div>
+                            <div class="hidden md:flex aspect-[4/5] bg-gray-50 items-center justify-center"><img src="${product.image}" class="w-full h-full object-contain mix-blend-multiply p-8 opacity-90 scale-110" alt="${product.name}"></div>
+                            <div class="hidden md:flex aspect-[4/5] bg-gray-100 items-center justify-center"><img src="${product.image}" class="w-full h-full object-cover mix-blend-multiply opacity-80" alt="${product.name}"></div>
+                            <div class="hidden md:flex aspect-[4/5] bg-gray-900 items-center justify-center"><img src="${product.image}" class="w-full h-full object-contain p-8 opacity-60 invert" alt="${product.name}"></div>
+                        </div>
+                        
+                        <div class="fixed bottom-0 left-0 right-0 md:static bg-white p-3 md:p-0 border-t border-gray-200 md:border-none z-50 flex gap-2 md:mt-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] md:shadow-none">
+                            <div class="w-1/2">
+                                ${actionHtml}
+                            </div>
+                            <button onclick="addToCart('${product.id}'); setIsCartOpen(true);" class="w-1/2 bg-[#ffc200] hover:bg-[#f3b600] text-gray-900 font-medium h-[48px] rounded-sm flex items-center justify-center transition-colors shadow-sm">
+                                Buy at ₹${product.price}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Details -->
+                    <div class="w-full md:w-7/12 flex flex-col px-4 md:px-0 mt-4 md:mt-8">
+                        
+                        <!-- Size selection -->
+                        <div class="mb-5">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="font-medium text-gray-900">Select Size</span>
+                                <span class="text-blue-600 text-sm font-medium ml-2 cursor-pointer">Size Chart</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="border-2 border-blue-600 text-blue-600 font-bold px-4 py-1.5 rounded-md min-w-[3rem] text-center">${product.unit}</button>
+                            </div>
+                            <a href="#" class="text-blue-600 text-sm mt-3 inline-block font-medium hover:underline">Visit brand store</a>
+                            <h1 class="text-lg text-gray-800 mt-1">${product.name}</h1>
+                        </div>
+
+                        <!-- Price Section -->
+                        <div class="mb-3 flex items-baseline gap-3">
+                            <span class="text-[#388e3c] font-bold text-2xl tracking-tight">&darr;${discountPercent}%</span>
+                            <span class="text-gray-500 line-through text-xl">₹${mrp}</span>
+                            <span class="text-3xl font-bold text-gray-900">₹${product.price}</span>
+                        </div>
+                        <div class="bg-[#e6f4ea] text-[#137333] text-xs px-3 py-2 rounded-sm font-bold mb-6 flex items-center gap-2 border border-[#ceead6] w-fit">
+                            <i data-lucide="tag" class="w-4 h-4 fill-[#137333]"></i> ₹${mrp - product.price} off applied for you
+                        </div>
+
+                        <!-- Offers -->
+                        <div class="border border-gray-200 rounded-md overflow-hidden mb-4">
+                            <div class="bg-[#2874f0] text-white p-3 flex justify-between items-center cursor-pointer">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-black border border-white px-1 text-[10px] rounded tracking-wider bg-[#0f52ba]">WOW! DEAL</span>
+                                    <span class="font-bold text-sm">Buy at ₹${Math.max(1, product.price - 2)}</span>
+                                </div>
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </div>
+                            <div class="bg-[#f0f5ff] p-3 text-xs text-gray-700">
+                                Apply offers for maximum savings!
+                            </div>
+                        </div>
+
+                        <!-- Delivery -->
+                        <div class="mb-6">
+                            <h3 class="font-bold text-gray-900 mb-3 text-base">Delivery details</h3>
+                            <div class="border border-gray-200 rounded-md overflow-hidden">
+                                <div class="p-3 border-b border-gray-200 flex items-center justify-between bg-blue-50/50 cursor-pointer hover:bg-blue-50 transition-colors">
+                                    <div class="flex items-center gap-2 text-sm text-gray-800 font-medium">
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-gray-500"></i>
+                                        <span class="line-clamp-1">${window.appState.location || 'Select Delivery Location'}</span>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                </div>
+                                <div class="p-3 flex items-start gap-3 border-b border-gray-200 bg-white">
+                                    <i data-lucide="truck" class="w-5 h-5 text-gray-600 mt-0.5"></i>
+                                    <div>
+                                        <span class="font-bold text-gray-900 block text-sm">Delivery in 10 mins</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 flex items-start gap-3 bg-gray-50">
+                                    <i data-lucide="store" class="w-5 h-5 text-gray-400 mt-0.5"></i>
+                                    <div class="text-sm">
+                                        <span class="text-gray-800 block">Fulfilled by Lapak Essentials</span>
+                                        <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                            4.8 <i data-lucide="star" class="w-3 h-3 fill-gray-400 text-gray-400"></i> • Trusted Service
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accordions -->
+                        <div class="space-y-0 text-sm">
+                            <div class="py-4">
+                                <div class="flex justify-between items-center cursor-pointer mb-2">
+                                    <h3 class="font-bold text-gray-900 text-base">Product highlights</h3>
+                                    <i data-lucide="chevron-up" class="w-5 h-5 text-gray-400 bg-gray-100 rounded-full p-0.5"></i>
+                                </div>
+                                <div class="grid grid-cols-2 gap-y-4 gap-x-2 mt-4 text-gray-800">
+                                    <div>
+                                        <span class="text-gray-500 block mb-1 text-xs">Category</span>
+                                        <span>${product.category}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 block mb-1 text-xs">Unit/Size</span>
+                                        <span>${product.unit}</span>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <span class="text-gray-500 block mb-1 text-xs">Description</span>
+                                        <p class="leading-relaxed">${product.description || 'Premium quality product. Experience the best features and durability.'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function updateUI() {
+            if (PRODUCTS.length === 0) {
+                document.getElementById('staples-products').innerHTML = `
+                    <div class="col-span-full py-10 text-center text-gray-500">
+                        No products available yet. Waiting for updates...
+                    </div>`;
+                document.getElementById('trending-products').innerHTML = ``;
+            } else {
+                document.getElementById('staples-products').innerHTML = PRODUCTS.map(p => createProductCardHTML(p)).join('');
+                document.getElementById('trending-products').innerHTML = PRODUCTS.slice(0, 5).map(p => createProductCardHTML(p)).join('');
+            }
+            
+            if(window.appState.currentView === 'search') renderSearchResults();
+            if(window.appState.currentView === 'product') renderProductPage();
+            renderCart();
+            lucide.createIcons();
+        }
+
+        function renderCart() {
+            const { cart } = window.appState;
+            const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            const cartItemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            document.querySelectorAll('.cart-badge').forEach(el => {
+                if(cartItemCount > 0) { el.textContent = cartItemCount; el.classList.remove('hidden'); } 
+                else { el.classList.add('hidden'); }
+            });
+            document.getElementById('cart-header-count').textContent = `${cartItemCount} Items`;
+
+            if (cart.length === 0) {
+                document.getElementById('empty-cart').classList.remove('hidden');
+                document.getElementById('cart-footer').classList.add('hidden');
+                document.getElementById('cart-items-container').innerHTML = '';
+            } else {
+                document.getElementById('empty-cart').classList.add('hidden');
+                document.getElementById('cart-footer').classList.remove('hidden');
+                document.getElementById('cart-items-container').innerHTML = cart.map(item => `
+                    <div class="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+                            <img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">
+                        </div>
+                        <div class="flex-1 flex flex-col justify-center">
+                            <h4 class="text-sm font-bold text-gray-900 line-clamp-1">${item.name}</h4>
+                            <p class="text-xs text-gray-500 mb-2">${item.unit}</p>
+                            <div class="flex items-center justify-between">
+                                <span class="font-black text-gray-900">₹${item.price * item.qty}</span>
+                                <div class="flex items-center bg-brand-50 rounded-lg border border-brand-100 h-7">
+                                    <button onclick="updateQuantity('${item.id}', -1)" class="w-7 h-full flex items-center justify-center text-brand-600 hover:bg-brand-100 rounded-l-lg transition-colors"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                                    <span class="w-6 text-center text-xs font-bold text-brand-700">${item.qty}</span>
+                                    <button onclick="updateQuantity('${item.id}', 1)" class="w-7 h-full flex items-center justify-center text-brand-600 hover:bg-brand-100 rounded-r-lg transition-colors"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('cart-subtotal').textContent = `₹${cartTotal}`;
+                document.getElementById('cart-total').textContent = `₹${cartTotal}`;
+                document.getElementById('checkout-btn-text').innerHTML = `₹${cartTotal} <i data-lucide="chevron-right" class="w-4 h-4"></i>`;
+            }
+        }
+
+        function renderSearchResults() {
+            const container = document.getElementById('search-results-grid');
+            const emptyState = document.getElementById('search-empty');
+            const { searchQuery } = window.appState;
+            
+            const filtered = PRODUCTS.filter(p => 
+                p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                p.category.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            document.getElementById('search-results-title').textContent = searchQuery ? `Results for "${searchQuery}"` : 'Suggested for you';
+
+            if (filtered.length > 0) {
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                container.innerHTML = filtered.map(p => createProductCardHTML(p)).join('');
+            } else {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        window.addToCart = (id) => {
+            const product = PRODUCTS.find(p => p.id === id);
+            if(product) window.appState.cart.push({ ...product, qty: 1 });
+            updateUI();
+        };
+
+        window.updateQuantity = (id, delta) => {
+            const existing = window.appState.cart.find(item => item.id === id);
+            if (existing) {
+                existing.qty = Math.max(0, existing.qty + delta);
+                if (existing.qty === 0) {
+                    window.appState.cart = window.appState.cart.filter(item => item.id !== id);
+                }
+            }
+            updateUI();
+        };
+
+        window.handleSearch = (e) => {
+            window.appState.searchQuery = e.target.value;
+            document.getElementById('search-input-header').value = window.appState.searchQuery;
+            document.getElementById('search-input-main').value = window.appState.searchQuery;
+            
+            if (window.appState.searchQuery.length > 0 && window.appState.currentView !== 'search') {
+                window.navigateTo('search');
+            } else {
+                renderSearchResults();
+            }
+        };
+
+        window.searchCategory = (name) => {
+            window.appState.searchQuery = name;
+            document.getElementById('search-input-header').value = name;
+            document.getElementById('search-input-main').value = name;
+            window.navigateTo('search');
+        };
+
+        window.placeOrder = () => {
+            const btn = document.getElementById('checkout-pay-btn');
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Processing...`;
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                window.appState.cart = [];
+                window.appState.hasActiveOrder = true;
+                updateUI();
+                btn.innerHTML = `Pay & Place Order <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                window.navigateTo('tracking');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

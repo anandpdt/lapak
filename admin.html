@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Lapak CMS</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+background:#f5f7fb;
+}
+</style>
+</head>
+
+<body>
+
+<div class="flex min-h-screen">
+
+<!-- SIDEBAR -->
+
+<div class="w-64 bg-gray-900 text-white">
+
+<div class="p-6 text-2xl font-bold">
+LAPAK CMS
+</div>
+
+<nav class="p-4 space-y-2">
+
+<button
+onclick="showSection('products')"
+class="w-full text-left p-3 rounded bg-gray-800">
+Products
+</button>
+
+<button
+onclick="showSection('orders')"
+class="w-full text-left p-3 rounded hover:bg-gray-800">
+Orders
+</button>
+
+<button
+onclick="showSection('analytics')"
+class="w-full text-left p-3 rounded hover:bg-gray-800">
+Analytics
+</button>
+
+<button
+onclick="logout()"
+class="w-full text-left p-3 rounded bg-red-500 mt-10">
+Logout
+</button>
+
+</nav>
+
+</div>
+
+<!-- CONTENT -->
+
+<div class="flex-1 p-8">
+
+<h1 class="text-3xl font-bold mb-6">
+Store Owner Dashboard
+</h1>
+
+<div class="grid md:grid-cols-4 gap-4 mb-8">
+
+<div class="bg-white p-5 rounded-xl shadow">
+<h3 class="text-gray-500">Products</h3>
+<p id="productCount" class="text-3xl font-bold">
+0
+</p>
+</div>
+
+<div class="bg-white p-5 rounded-xl shadow">
+<h3 class="text-gray-500">Orders</h3>
+<p class="text-3xl font-bold">
+0
+</p>
+</div>
+
+<div class="bg-white p-5 rounded-xl shadow">
+<h3 class="text-gray-500">Revenue</h3>
+<p class="text-3xl font-bold">
+₹0
+</p>
+</div>
+
+<div class="bg-white p-5 rounded-xl shadow">
+<h3 class="text-gray-500">Customers</h3>
+<p class="text-3xl font-bold">
+0
+</p>
+</div>
+
+</div>
+
+<!-- PRODUCTS -->
+
+<div id="productsSection">
+
+<div class="flex justify-between mb-6">
+
+<h2 class="text-2xl font-bold">
+Products
+</h2>
+
+<div>
+    <button onclick="seedProducts()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium mr-2">
+        Load Demo Products
+    </button>
+    <button onclick="openModal()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium shadow-lg shadow-orange-500/30">
+        + Add Product
+    </button>
+</div>
+
+</div>
+
+<div class="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
+
+<table class="w-full">
+
+<thead class="bg-gray-50 border-b border-gray-100">
+
+<tr>
+
+<th class="p-4 text-left font-bold text-gray-700">
+Image
+</th>
+
+<th class="p-4 text-left font-bold text-gray-700">
+Product Details
+</th>
+
+<th class="p-4 text-left font-bold text-gray-700">
+Price
+</th>
+
+<th class="p-4 text-left font-bold text-gray-700">
+Stock
+</th>
+
+<th class="p-4 text-left font-bold text-gray-700">
+Actions
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="productTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- ORDERS -->
+
+<div id="ordersSection" class="hidden">
+<h2 class="text-2xl font-bold mb-4">Orders</h2>
+<div class="bg-white p-6 rounded-xl shadow border border-gray-100 text-gray-500">
+No orders integration yet.
+</div>
+</div>
+
+<!-- ANALYTICS -->
+
+<div id="analyticsSection" class="hidden">
+<h2 class="text-2xl font-bold mb-4">Analytics</h2>
+<div class="bg-white p-6 rounded-xl shadow border border-gray-100 text-gray-500">
+Revenue Graph Coming Soon
+</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- MODAL -->
+
+<div id="modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50">
+    <div class="bg-white w-full max-w-lg p-6 rounded-2xl shadow-xl">
+        <h2 class="text-xl font-bold mb-4 text-gray-900" id="modalTitle">Add Product</h2>
+        
+        <div class="space-y-3 mb-6">
+            <input id="name" placeholder="Product Name" class="w-full border border-gray-200 p-3 rounded-xl focus:border-orange-500 outline-none">
+            
+            <div class="flex gap-3">
+                <input id="price" type="number" placeholder="Price (₹)" class="w-1/2 border border-gray-200 p-3 rounded-xl focus:border-orange-500 outline-none">
+                <input id="stock" type="number" placeholder="Stock Qty" class="w-1/2 border border-gray-200 p-3 rounded-xl focus:border-orange-500 outline-none">
+            </div>
+
+            <div class="flex gap-3">
+                <input id="category" placeholder="Category (e.g., Dairy)" class="w-1/2 border border-gray-200 p-3 rounded-xl focus:border-orange-500 outline-none">
+                <input id="unit" placeholder="Unit (e.g., 1 L, 500g)" class="w-1/2 border border-gray-200 p-3 rounded-xl focus:border-orange-500 outline-none">
+            </div>
+
+            <input id="image" placeholder="Image URL (Unsplash etc.)" class="w-full border border-gray-200 p-3 rounded-xl focus:border-orange-500 outline-none">
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closeModal()" class="bg-gray-100 text-gray-700 font-bold px-5 py-2.5 rounded-xl hover:bg-gray-200">
+                Cancel
+            </button>
+            <button onclick="saveProduct()" class="bg-orange-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-orange-600 shadow-lg shadow-orange-500/30">
+                Save Product
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FIREBASE SDK & LOGIC -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCD3TrFzwAhDIgO0tzFWoCiL31E2HRZf4g",
+        authDomain: "lapak-80a76.firebaseapp.com",
+        projectId: "lapak-80a76",
+        storageBucket: "lapak-80a76.firebasestorage.app",
+        messagingSenderId: "289969230090",
+        appId: "1:289969230090:web:6e8111adbb36796f726af3",
+        measurementId: "G-7PN1EF5LX9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'lapak-default-app';
+    const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+
+    let products = [];
+    let editId = null;
+
+    // Strict Auth Check - Protect the CMS
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = "index.html";
+            return;
+        }
+        
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const role = userSnap.data().role;
+                if (!['store_owner', 'founder', 'admin'].includes(role)) {
+                    alert("Unauthorized! You are not a store admin.");
+                    window.location.href = "index.html";
+                }
+            } else {
+                window.location.href = "index.html";
+            }
+        } catch (e) {
+            console.error("Auth verify failed:", e);
+        }
+    });
+
+    // Real-time Database Listener
+    onSnapshot(productsRef, (snapshot) => {
+        products = [];
+        snapshot.forEach((doc) => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+        renderProducts();
+    });
+
+    window.showSection = (section) => {
+        document.getElementById("productsSection").classList.add("hidden");
+        document.getElementById("ordersSection").classList.add("hidden");
+        document.getElementById("analyticsSection").classList.add("hidden");
+        document.getElementById(section + "Section").classList.remove("hidden");
+    };
+
+    window.openModal = () => {
+        editId = null;
+        document.getElementById("modalTitle").innerText = "Add New Product";
+        document.getElementById("modal").classList.remove("hidden");
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("stock").value = "";
+        document.getElementById("category").value = "";
+        document.getElementById("unit").value = "";
+        document.getElementById("image").value = "";
+    };
+
+    window.closeModal = () => {
+        document.getElementById("modal").classList.add("hidden");
+    };
+
+    window.saveProduct = async () => {
+        const productData = {
+            name: document.getElementById("name").value,
+            price: Number(document.getElementById("price").value),
+            stock: Number(document.getElementById("stock").value),
+            category: document.getElementById("category").value || 'Others',
+            unit: document.getElementById("unit").value || '1 pc',
+            image: document.getElementById("image").value || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&q=80'
+        };
+
+        if (!productData.name || !productData.price) return alert("Name and price are required!");
+
+        try {
+            if (editId === null) {
+                await addDoc(productsRef, productData);
+            } else {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', editId);
+                await updateDoc(docRef, productData);
+            }
+            window.closeModal();
+        } catch (e) {
+            alert("Error saving to Firebase: " + e.message);
+        }
+    };
+
+    window.editProduct = (id) => {
+        editId = id;
+        const p = products.find(prod => prod.id === id);
+        if (p) {
+            document.getElementById("modalTitle").innerText = "Edit Product";
+            document.getElementById("name").value = p.name || '';
+            document.getElementById("price").value = p.price || '';
+            document.getElementById("stock").value = p.stock || '';
+            document.getElementById("category").value = p.category || '';
+            document.getElementById("unit").value = p.unit || '';
+            document.getElementById("image").value = p.image || '';
+            document.getElementById("modal").classList.remove("hidden");
+        }
+    };
+
+    window.deleteProduct = async (id) => {
+        if (confirm("Are you sure you want to completely delete this product?")) {
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+            } catch (e) {
+                alert("Error deleting: " + e.message);
+            }
+        }
+    };
+
+    window.seedProducts = async () => {
+        if(confirm("This will load 5 demo items into your database to help you start. Proceed?")) {
+            const DEMO_PRODUCTS = [
+                { name: 'Amul Taaza Toned Milk', price: 60, stock: 100, unit: '1 L', category: 'Dairy', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300&q=80' },
+                { name: 'Onion (Pyaz)', price: 40, stock: 100, unit: '1 kg', category: 'Vegetables', image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&q=80' },
+                { name: 'Britannia White Bread', price: 45, stock: 50, unit: '400 g', category: 'Bakery', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&q=80' },
+                { name: 'Farm Fresh Eggs', price: 85, stock: 30, unit: '12 Pcs', category: 'Dairy', image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=300&q=80' },
+                { name: 'Lay\'s India\'s Magic Masala', price: 20, stock: 200, unit: '50 g', category: 'Snacks', image: 'https://images.unsplash.com/photo-1566478989037-e124c1b320d5?w=300&q=80' }
+            ];
+            for (const p of DEMO_PRODUCTS) {
+                await addDoc(productsRef, p);
+            }
+        }
+    };
+
+    function renderProducts() {
+        const table = document.getElementById("productTable");
+        table.innerHTML = "";
+        
+        products.forEach((p) => {
+            table.innerHTML += `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="p-4">
+                    <img src="${p.image}" class="w-14 h-14 object-cover rounded-xl shadow-sm border border-gray-200">
+                </td>
+                <td class="p-4">
+                    <div class="font-bold text-gray-900">${p.name}</div>
+                    <div class="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">${p.category || 'N/A'} • ${p.unit || '1 pc'}</div>
+                </td>
+                <td class="p-4 font-bold text-gray-900">₹${p.price}</td>
+                <td class="p-4 text-gray-700">${p.stock}</td>
+                <td class="p-4">
+                    <button onclick="editProduct('${p.id}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-lg transition-colors">
+                        Edit
+                    </button>
+                    <button onclick="deleteProduct('${p.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-4 py-2 rounded-lg ml-2 transition-colors">
+                        Delete
+                    </button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById("productCount").innerText = products.length;
+    }
+
+    window.logout = async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    };
+</script>
+
+</body>
+</html>
